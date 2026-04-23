@@ -109,7 +109,7 @@ class NoteBookApp {
 
     document.getElementById('cornellTitle').addEventListener('input', () => {
       this.saveCurrentPageData();
-      this.reorganizePageByTitle();
+      this.reorganizeAllPagesByTitle();
       this.updateTOC();
     });
 
@@ -194,47 +194,40 @@ class NoteBookApp {
     this.saveData();
   }
 
-  reorganizePageByTitle() {
+  reorganizeAllPagesByTitle() {
     if (this.pages.length === 0) return;
     
     const currentPage = this.pages[this.currentPageIndex];
-    const currentCornellTitle = currentPage.cornell?.title?.trim();
+    const currentPageId = currentPage.id;
     
-    if (!currentCornellTitle) {
-      return;
-    }
+    const titleGroups = new Map();
+    const untitledPages = [];
     
-    const sameTitleIndices = [];
-    for (let i = 0; i < this.pages.length; i++) {
-      if (i === this.currentPageIndex) continue;
-      const page = this.pages[i];
-      const pageCornellTitle = page.cornell?.title?.trim();
-      if (pageCornellTitle === currentCornellTitle) {
-        sameTitleIndices.push(i);
+    for (const page of this.pages) {
+      const cornellTitle = page.cornell?.title?.trim();
+      
+      if (cornellTitle) {
+        if (!titleGroups.has(cornellTitle)) {
+          titleGroups.set(cornellTitle, []);
+        }
+        titleGroups.get(cornellTitle).push(page);
+      } else {
+        untitledPages.push(page);
       }
     }
     
-    if (sameTitleIndices.length === 0) {
-      return;
+    const newPages = [];
+    for (const [title, pages] of titleGroups) {
+      newPages.push(...pages);
     }
+    newPages.push(...untitledPages);
     
-    const maxSameTitleIndex = Math.max(...sameTitleIndices);
+    this.pages = newPages;
     
-    if (this.currentPageIndex > maxSameTitleIndex) {
-      return;
+    this.currentPageIndex = this.pages.findIndex(page => page.id === currentPageId);
+    if (this.currentPageIndex === -1) {
+      this.currentPageIndex = 0;
     }
-    
-    const pageToMove = this.pages.splice(this.currentPageIndex, 1)[0];
-    
-    let newInsertIndex;
-    if (this.currentPageIndex < maxSameTitleIndex) {
-      newInsertIndex = maxSameTitleIndex;
-    } else {
-      newInsertIndex = maxSameTitleIndex + 1;
-    }
-    
-    this.pages.splice(newInsertIndex, 0, pageToMove);
-    this.currentPageIndex = newInsertIndex;
     
     this.renderTOC();
     this.renderCurrentPage();
