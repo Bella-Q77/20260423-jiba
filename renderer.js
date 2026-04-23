@@ -109,6 +109,7 @@ class NoteBookApp {
 
     document.getElementById('cornellTitle').addEventListener('input', () => {
       this.saveCurrentPageData();
+      this.reorganizePageByTitle();
       this.updateTOC();
     });
 
@@ -191,6 +192,52 @@ class NoteBookApp {
     this.renderTOC();
     this.renderCurrentPage();
     this.saveData();
+  }
+
+  reorganizePageByTitle() {
+    if (this.pages.length === 0) return;
+    
+    const currentPage = this.pages[this.currentPageIndex];
+    const currentCornellTitle = currentPage.cornell?.title?.trim();
+    
+    if (!currentCornellTitle) {
+      return;
+    }
+    
+    const sameTitleIndices = [];
+    for (let i = 0; i < this.pages.length; i++) {
+      if (i === this.currentPageIndex) continue;
+      const page = this.pages[i];
+      const pageCornellTitle = page.cornell?.title?.trim();
+      if (pageCornellTitle === currentCornellTitle) {
+        sameTitleIndices.push(i);
+      }
+    }
+    
+    if (sameTitleIndices.length === 0) {
+      return;
+    }
+    
+    const maxSameTitleIndex = Math.max(...sameTitleIndices);
+    
+    if (this.currentPageIndex > maxSameTitleIndex) {
+      return;
+    }
+    
+    const pageToMove = this.pages.splice(this.currentPageIndex, 1)[0];
+    
+    let newInsertIndex;
+    if (this.currentPageIndex < maxSameTitleIndex) {
+      newInsertIndex = maxSameTitleIndex;
+    } else {
+      newInsertIndex = maxSameTitleIndex + 1;
+    }
+    
+    this.pages.splice(newInsertIndex, 0, pageToMove);
+    this.currentPageIndex = newInsertIndex;
+    
+    this.renderTOC();
+    this.renderCurrentPage();
   }
 
   deletePage(index) {
