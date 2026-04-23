@@ -328,16 +328,12 @@ class NoteBookApp {
       
       const pageNum = index + 1;
       const cornellTitle = page.cornell?.title?.trim();
-      const leftTitle = page.title?.trim();
-      const defaultPageTitle = '第 ' + pageNum + ' 页';
       
       let displayTitle;
-      if (cornellTitle && cornellTitle !== defaultPageTitle) {
+      if (cornellTitle) {
         displayTitle = '第 ' + pageNum + ' 页：' + cornellTitle;
-      } else if (leftTitle && leftTitle !== defaultPageTitle) {
-        displayTitle = '第 ' + pageNum + ' 页：' + leftTitle;
       } else {
-        displayTitle = defaultPageTitle;
+        displayTitle = '第 ' + pageNum + ' 页';
       }
       
       title.textContent = displayTitle;
